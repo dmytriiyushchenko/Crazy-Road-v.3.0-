@@ -280,7 +280,42 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // MARK: - Collisions
     
     func didBegin(_ contact: SKPhysicsContact) {
-        handleCollision()
+        showDeathAnimation()
+    }
+    
+    func showDeathAnimation() {
+        player.removeAllActions()
+        
+        for i in 0..<6 {
+            let feather = SKLabelNode(text: "🪶")
+            feather.fontSize = 20
+            feather.position = player.position
+            feather.zPosition = 15
+            addChild(feather)
+            
+            let angle = CGFloat(i) * 60 * (.pi / 180)
+            let flyDistance: CGFloat = 70
+            let endX = player.position.x + cos(angle) * flyDistance
+            let endY = player.position.y + sin(angle) * flyDistance
+            
+            let flyAway = SKAction.move(to: CGPoint(x: endX, y: endY), duration: 0.5)
+            let spin = SKAction.rotate(byAngle: .pi * 2, duration: 0.5)
+            let disappear = SKAction.fadeOut(withDuration: 0.5)
+            
+            feather.run(SKAction.group([flyAway, spin, disappear])) {
+                feather.removeFromParent()
+            }
+        }
+        
+        let rotate = SKAction.rotate(byAngle: .pi * 2, duration: 0.5)
+        let shrink = SKAction.scale(to: 0.1, duration: 0.5)
+        let fade = SKAction.fadeOut(withDuration: 0.5)
+        
+        let allAnimations = SKAction.group([rotate, shrink, fade])
+        
+        player.run(allAnimations) {
+            self.handleCollision()
+        }
     }
     
     func handleCollision() {
